@@ -37,24 +37,24 @@ const getAllOrders = async (req) => {
         }
 
         // 3. Check Redis Cache
-        const cacheKey = `lab:${labId}:orders`;
-        const cachedOrders = await redisClient.get(cacheKey);
-
-        // Optionally clear cache for testing
-        if (req.query.clearCache === 'true') {
-            await redisClient.del(cacheKey);
-            console.log("Cache cleared");
-        }
-
-        if (cachedOrders && req.query.clearCache !== 'true') {
-            console.log("Returning cached orders");
-            return {
-                status: 200,
-                message: "Orders retrieved from cache",
-                orders: JSON.parse(cachedOrders),
-                cached: true
-            };
-        }
+        // const cacheKey = `lab:${labId}:orders`;
+        // const cachedOrders = await redisClient.get(cacheKey);
+        //
+        // // Optionally clear cache for testing
+        // if (req.query.clearCache === 'true') {
+        //     await redisClient.del(cacheKey);
+        //     console.log("Cache cleared");
+        // }
+        //
+        // if (cachedOrders && req.query.clearCache !== 'true') {
+        //     console.log("Returning cached orders");
+        //     return {
+        //         status: 200,
+        //         message: "Orders retrieved from cache",
+        //         orders: JSON.parse(cachedOrders),
+        //         cached: true
+        //     };
+        // }
 
         // 4. Fetch from Database with doctor population
         const labOrders = await orders.find({
