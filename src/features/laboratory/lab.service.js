@@ -75,15 +75,15 @@ const getAllOrders = async (req) => {
             doctorUsername: order.doctorId?.username || 'Unknown'
         }));
 
-        // 5. Cache Results
-        if (transformedOrders.length > 0) {
-            await redisClient.set(
-                cacheKey,
-                JSON.stringify(transformedOrders),
-                "EX",
-                600 // 10 minutes
-            );
-        }
+        // // 5. Cache Results
+        // if (transformedOrders.length > 0) {
+        //     await redisClient.set(
+        //         cacheKey,
+        //         JSON.stringify(transformedOrders),
+        //         "EX",
+        //         600 // 10 minutes
+        //     );
+        // }
 
         return {
             status: 200,
