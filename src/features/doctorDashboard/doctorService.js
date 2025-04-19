@@ -51,7 +51,7 @@ const createOrder = async (doctorId, patientName, age, teethNo, sex, color, type
         await newOrder.save();
 
         // Cache the order in Redis
-        await redisClient.set(generateOrderKey(newOrder._id), JSON.stringify(newOrder));
+        // await redisClient.set(generateOrderKey(newOrder._id), JSON.stringify(newOrder));
 
         return {
             success: true,
@@ -75,19 +75,19 @@ const getDoctorsorders = async (req) => {
         const cacheKey = generateDoctorOrdersKey(doctorId);
 
         // Check if orders are cached in Redis
-        const cachedOrders = await redisClient.get(cacheKey);
-        if (cachedOrders) {
-            return {
-                orders: JSON.parse(cachedOrders),
-                fromCache: true, // Data is from cache
-            };
-        }
+        // const cachedOrders = await redisClient.get(cacheKey);
+        // if (cachedOrders) {
+        //     return {
+        //         orders: JSON.parse(cachedOrders),
+        //         fromCache: true, // Data is from cache
+        //     };
+        // }
 
         // Fetch from database if not cached
         const ordersD = await orders.find({ doctorId: doctorId });
 
         // Cache the orders in Redis
-        await redisClient.set(cacheKey, JSON.stringify(ordersD));
+        // await redisClient.set(cacheKey, JSON.stringify(ordersD));
 
         return {
             orders: ordersD,
@@ -109,13 +109,13 @@ const getOrdersBasedOnDate = async (req, startDate, endDate) => {
         const cacheKey = generateDateBasedOrdersKey(doctorId, startDate, endDate);
 
         // Check if orders are cached in Redis
-        const cachedOrders = await redisClient.get(cacheKey);
-        if (cachedOrders) {
-            return {
-                orders: JSON.parse(cachedOrders),
-                fromCache: true, // Data is from cache
-            };
-        }
+        // const cachedOrders = await redisClient.get(cacheKey);
+        // if (cachedOrders) {
+        //     return {
+        //         orders: JSON.parse(cachedOrders),
+        //         fromCache: true, // Data is from cache
+        //     };
+        // }
 
         // Convert dates to JavaScript Date objects
         const start = new Date(startDate);
@@ -131,7 +131,7 @@ const getOrdersBasedOnDate = async (req, startDate, endDate) => {
         });
 
         // Cache the orders in Redis
-        await redisClient.set(cacheKey, JSON.stringify(ordersList));
+        // await redisClient.set(cacheKey, JSON.stringify(ordersList));
 
         return {
             orders: ordersList,
@@ -149,13 +149,13 @@ const ordersBasedonStatus = async (req, status) => {
         const cacheKey = generateStatusBasedOrdersKey(doctorId, status);
 
         // Check if orders are cached in Redis
-        const cachedOrders = await redisClient.get(cacheKey);
-        if (cachedOrders) {
-            return {
-                orders: JSON.parse(cachedOrders),
-                fromCache: true, // Data is from cache
-            };
-        }
+        // const cachedOrders = await redisClient.get(cacheKey);
+        // if (cachedOrders) {
+        //     return {
+        //         orders: JSON.parse(cachedOrders),
+        //         fromCache: true, // Data is from cache
+        //     };
+        // }
 
         let query = { doctorId: doctorId };
 
@@ -170,7 +170,7 @@ const ordersBasedonStatus = async (req, status) => {
         const ordersD = await orders.find(query);
 
         // Cache the orders in Redis
-        await redisClient.set(cacheKey, JSON.stringify(ordersD));
+        // await redisClient.set(cacheKey, JSON.stringify(ordersD));
 
         return {
             orders: ordersD,
@@ -187,15 +187,15 @@ const getMyContracts = async (req) => {
     const doctorId = req.doctor.id;
 
     try {
-        const cachedContract = await redisClient.get(`contract:${doctorId}`);
-        if (cachedContract) {
-            return {
-                status: 200,
-                message: "Contract retrieved from cache",
-                contract: JSON.parse(cachedContract),
-                fromCache: true
-            };
-        }
+        // const cachedContract = await redisClient.get(`contract:${doctorId}`);
+        // if (cachedContract) {
+        //     return {
+        //         status: 200,
+        //         message: "Contract retrieved from cache",
+        //         contract: JSON.parse(cachedContract),
+        //         fromCache: true
+        //     };
+        // }
         const lab = await labs.findById(labId);
         if (!lab) {
             return { status: 404, message: "Lab not found", contract: null, fromCache: false };
@@ -204,7 +204,7 @@ const getMyContracts = async (req) => {
         if (!contract) {
             return { status: 400, message: "You are not subscribed with this lab", contract: null, fromCache: false };
         }
-        await redisClient.setEx(`contract:${doctorId}`, 3600, JSON.stringify(contract));
+        // await redisClient.setEx(`contract:${doctorId}`, 3600, JSON.stringify(contract));
         return {
             status: 200,
             message: "Contract retrieved successfully",

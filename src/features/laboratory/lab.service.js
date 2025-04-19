@@ -307,7 +307,7 @@ const addContractForDoctor = async (req) => {
         }
 
         await lab.save();
-        await redisClient.del(`contract:${doctor._id}`);
+        // await redisClient.del(`contract:${doctor._id}`);
 
         return {
             status: 200,
@@ -371,9 +371,9 @@ const updateContractForDoctor = async (req) => {
         if (contractIndex === -1) return { status: 404, message: "Contract not found", contract: null };
         lab.contracts[contractIndex].teethTypes = teethTypes;
         await lab.save();
-        await redisClient.del(`contract:${doctorId}`);
-        const updatedContract = lab.contracts[contractIndex];
-        await redisClient.setEx(`contract:${doctorId}`, 3600, JSON.stringify(updatedContract));
+        // await redisClient.del(`contract:${doctorId}`);
+        // const updatedContract = lab.contracts[contractIndex];
+        // await redisClient.setEx(`contract:${doctorId}`, 3600, JSON.stringify(updatedContract));
         return { status: 200, message: "Contract updated successfully", contract: updatedContract };
     } catch (error) {
         console.error("Error in updateContractForDoctor service:", error);
@@ -472,18 +472,18 @@ const markOrder = async (req) => {
         // 5. Save the Updated Order
         const updatedOrder = await order.save();
 
-        // 6. Clear Redis Cache
-        const cacheKeys = [
-            `lab:${labId}:orders`, // Lab's orders cache
-            generateOrderKey(orderId), // Specific order cache if you have it
-            generateLabOrdersKey(labId) // If you use this utility
-        ];
-
-        await Promise.all(
-            cacheKeys.map(key => redisClient.del(key).catch(err => {
-                console.error(`Error deleting cache key ${key}:`, err);
-            }))
-        );
+        // // 6. Clear Redis Cache
+        // const cacheKeys = [
+        //     `lab:${labId}:orders`, // Lab's orders cache
+        //     generateOrderKey(orderId), // Specific order cache if you have it
+        //     generateLabOrdersKey(labId) // If you use this utility
+        // ];
+        //
+        // await Promise.all(
+        //     cacheKeys.map(key => redisClient.del(key).catch(err => {
+        //         console.error(`Error deleting cache key ${key}:`, err);
+        //     }))
+        // );
 
         // 7. Return Success Response
         return {
