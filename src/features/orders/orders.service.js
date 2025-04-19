@@ -72,10 +72,10 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
 
         await newOrder.save();
 
-        // Cache operations
-        await redisClient.set(generateOrderKey(newOrder._id), JSON.stringify(newOrder));
-        await redisClient.del(generateDoctorOrdersKey(doctorId));
-        await redisClient.del(generateLabOrdersKey(labId));
+        // // Cache operations
+        // await redisClient.set(generateOrderKey(newOrder._id), JSON.stringify(newOrder));
+        // await redisClient.del(generateDoctorOrdersKey(doctorId));
+        // await redisClient.del(generateLabOrdersKey(labId));
 
         // Socket emission
         if (global.io) {
