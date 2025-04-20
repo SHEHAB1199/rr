@@ -155,19 +155,19 @@ const getOrderById = async (req) => {
     try {
         const orderId = req.params.id;
         const labId = req.lab.id;
-        const cacheKey = generateOrderKey(orderId);
-        const cachedOrder = await redisClient.get(cacheKey);
-        if (cachedOrder) {
-            console.log("Cache hit");
-            return { status: 200, message: "Order retrieved from cache", order: JSON.parse(cachedOrder) };
-        }
-        console.log("Cache miss");
+        // const cacheKey = generateOrderKey(orderId);
+        // const cachedOrder = await redisClient.get(cacheKey);
+        // if (cachedOrder) {
+        //     console.log("Cache hit");
+        //     return { status: 200, message: "Order retrieved from cache", order: JSON.parse(cachedOrder) };
+        // }
+        // console.log("Cache miss");
         const order = await orders.findOne({ _id: orderId, labId: labId });
         if (!order) {
             console.error(`Order not found: ${orderId}`);
             return { status: 404, message: "Order not found", order: null };
         }
-        await redisClient.setEx(cacheKey, 3600, JSON.stringify(order));
+        // await redisClient.setEx(cacheKey, 3600, JSON.stringify(order));
         return { status: 200, message: "Order retrieved successfully", order };
     } catch (error) {
         console.error("Error fetching order:", error.message);
