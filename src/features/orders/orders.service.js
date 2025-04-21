@@ -39,15 +39,29 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
             throw { status: 403, message: "No contract found with this lab" };
         }
 
-        // Validate price from contract (using object access, not Map)
+        // Validate price from contract
         if (!doctorContract.teethTypes || doctorContract.teethTypes[type] === undefined) {
             throw {
                 status: 400,
                 message: `No price defined for type: ${type}. Contact the lab.`
             };
         }
-        const calculatedPrice = doctorContract.teethTypes[type]*teethNo;
-        const doctorUsername = await doctors.findById(doctorId).select("username");
+        const calculatedPrice = doctorContract.teethTypes[type] * teethNo;
+
+        // Get doctor's username - FIXED THIS PART
+        const doctor = await doctors.findById(doctorId).select("username").lean();
+        if (!doctor) {
+            throw { status: 404, message: "Doctor not found" };
+        }
+
+        // Determine order status - FIXED THIS LOGIC
+        let status;
+        if (prova === true) {
+            status = "DoctorReady(p)";
+        } else {
+            status = "DoctorReady(f)";
+        }
+
         // Create the order
         const newOrder = new orders({
             UID: generateUID(),
@@ -60,7 +74,7 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
             type,
             description,
             price: calculatedPrice,
-            status: prova ? "DoctorReady(p)" : "DoctorReady(f)",
+            status: status,
             labId,
             doc_id: doctorId,
             delivery: [],
@@ -72,14 +86,13 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
         });
 
         await newOrder.save();
-        // // Cache operations
-        // await redisClient.set(generateOrderKey(newOrder._id), JSON.stringify(newOrder));
-        // await redisClient.del(generateDoctorOrdersKey(doctorId));
-        // await redisClient.del(generateLabOrdersKey(labId));
 
-        // Socket emission
+        // Socket emission - FIXED THE DATA BEING SENT
         if (global.io) {
-            global.io.emit(`get-orders/${labId}`, { orders: newOrder, doctorUsername });
+            global.io.emit(`get-orders/${labId}`, {
+                orders: newOrder,
+                doctorUsername: doctor.username
+            });
         }
 
         return {
@@ -94,11 +107,10 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
         return {
             status: error.status || 500,
             success: false,
-            message: error.message,
+            message: error.message || "Internal server error",
         };
     }
 };
-
 const updateOrders = async (req, orderId, updateData) => {
     try {
         console.log("Doctor ID:", req.doctor?.id);
