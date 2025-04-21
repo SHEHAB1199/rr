@@ -1,6 +1,7 @@
 const labs = require("../../models/labs.model");
 const orders = require("../../models/order.model");
 const redisClient = require("../../config/redis.config");
+const doctors = require("../../models/doctors.model");
 const crypto = require("crypto");
 const { generateOrderKey, generateDoctorOrdersKey, generateLabOrdersKey } = require("../../utility/redis.utility");
 
@@ -46,7 +47,7 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
             };
         }
         const calculatedPrice = doctorContract.teethTypes[type]*teethNo;
-
+        const doctorUsername = await doctors.findById(doctorId).select("username");
         // Create the order
         const newOrder = new orders({
             UID: generateUID(),
@@ -71,7 +72,6 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
         });
 
         await newOrder.save();
-
         // // Cache operations
         // await redisClient.set(generateOrderKey(newOrder._id), JSON.stringify(newOrder));
         // await redisClient.del(generateDoctorOrdersKey(doctorId));
@@ -79,7 +79,7 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
 
         // Socket emission
         if (global.io) {
-            global.io.emit(`get-orders/${labId}`, { orders: newOrder });
+            global.io.emit(`get-orders/${labId}`, { orders: newOrder, doctorUsername });
         }
 
         return {
