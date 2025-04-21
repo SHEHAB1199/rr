@@ -56,11 +56,14 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
 
         // Determine order status - FIXED THIS LOGIC
         let status;
-        if (prova === true) {
+        console.log("333333333", prova);
+        console.log(typeof prova);
+        if (prova === "true") {
             status = "DoctorReady(p)";
         } else {
             status = "DoctorReady(f)";
         }
+        console.log("333333333", status);
 
         // Create the order
         const newOrder = new orders({
