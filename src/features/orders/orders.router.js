@@ -4,6 +4,7 @@ const multer = require("multer");
 const storage = multer.memoryStorage(); // or use diskStorage / Cloudinary logic
 const upload = multer({ storage });
 const authenticateDoctor = require("../../middlewares/authincateDoctor");
+const authenticateLab = require("../../middlewares/authincatedLabs");
 const {
     createOrder,
     updateOrderController,
@@ -12,6 +13,6 @@ const {
 router.post('/create', upload.fields([
     { name: 'media', maxCount: 10 } // for multiple file uploads
 ]), authenticateDoctor, createOrder);
-router.post("/update/:id", authenticateDoctor, updateOrderController);
+router.put("/update/:id", authenticateLab, updateOrderController);
 router.get('/getMyLabs', authenticateDoctor, getMyLabs);
 module.exports = router;

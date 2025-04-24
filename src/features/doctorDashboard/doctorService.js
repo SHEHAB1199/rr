@@ -13,7 +13,7 @@ const generateUID = () => {
     return crypto.randomBytes(2).toString("hex").toUpperCase().slice(0, 3);
 };
 
-const createOrder = async (doctorId, patientName, age, teethNo, sex, color, type, description, price, prova, deadline, labId) => {
+const createOrder = async (doctorId, patientName, age, teethNo, sex, color, type, description, price, scanFile, prova, deadline, labId) => {
     try {
         // Validate required fields
         if (!doctorId || !patientName || !teethNo || !sex || !color || !type || prova === undefined || !deadline || !labId) {
@@ -250,4 +250,69 @@ const getOrderById = async(req)=>{
     }
 }
 
-module.exports = { createOrder, getDoctorsorders, getOrderById, getOrdersBasedOnDate, ordersBasedonStatus, getMyContracts };
+const returnOrder = async (req) => {
+    try {
+        const { orderId } = req.body;
+
+        const order = await orders.findOne({ _id: orderId });
+
+        if (!order) {
+            return {
+                status: 400,
+                message: "Failed to return the order"
+            };
+        }
+
+        if (order.status.includes("(p)")) {
+            order.status = "DocReady(p)";
+        } else if (order.status.includes("(f)")) {
+            order.status = "DocReady(f)";
+        }
+
+        await order.save();
+
+        return {
+            status: 200,
+            order: order
+        };
+
+    } catch (error) {
+        console.error(error);
+        return {
+            status: 500,
+            message: error.message
+        };
+    }
+};
+
+const updateOrders = async (req, orderId, updateData) => {
+    try {
+        console.log("Doctor ID:", req.doctor?.id);
+        console.log("Updating Order ID:", orderId);
+        const doctorId = req.doctor.id;
+        const order = await orders.findById(orderId);
+        // if (!order) {
+        //     console.error("Order not found in DB:", orderId);
+        //     throw new Error("Order not found");
+        // }
+        // console.log("Order doctor ID:", order.doctorId);
+        // if (order.doctorId.toString() !== doctorId) {
+        //     throw new Error("Unauthorized");
+        // }
+        const updatedOrder = await orders.findOneAndUpdate(
+            { _id: orderId },
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
+        console.log("Updated order:", updatedOrder);
+
+        return updatedOrder;
+    } catch (error) {
+        console.log(error);
+        console.error("Error updating order:", error.message);
+        throw new Error(error.message || "Error in updateOrders");
+    }
+};
+
+
+module.exports = { createOrder, returnOrder, updateOrders, getDoctorsorders, getOrderById, getOrdersBasedOnDate, ordersBasedonStatus, getMyContracts, returnOrder };

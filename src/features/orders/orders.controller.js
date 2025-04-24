@@ -12,7 +12,8 @@ const createOrder = async (req, res) => {
             description,
             prova,
             deadline,
-            labId
+            labId,
+            scanFile
         } = req.body;
 
         // Validate required fields at controller level too
@@ -34,9 +35,10 @@ const createOrder = async (req, res) => {
             description,
             prova,
             deadline,
-            labId
+            labId,
+            scanFile || false,
         );
-
+        console.log(response);
         // Use the status code from the service response
         return res.status(response.status).json({
             success: response.success,
@@ -51,6 +53,15 @@ const createOrder = async (req, res) => {
         });
     }
 };
+ const getMyLabs = async (req, res) => {
+     try{
+         const labs = await orderService.getMyLabs(req);
+         res.status(200).json({labs: labs});
+     }catch(error){
+         console.log(error);
+         res.status(500).json({ success: false, message: "Error getMyLabs" });
+     }
+ }
 const updateOrderController = async (req, res) => {
     try {
         const orderId = req.params.id; // Get order ID from URL
@@ -72,15 +83,6 @@ const updateOrderController = async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
- const getMyLabs = async (req, res) => {
-     try{
-         const labs = await orderService.getMyLabs(req);
-         res.status(200).json({labs: labs});
-     }catch(error){
-         console.log(error);
-         res.status(500).json({ success: false, message: "Error getMyLabs" });
-     }
- }
 
 module.exports = {
     createOrder,

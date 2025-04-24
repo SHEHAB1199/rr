@@ -76,6 +76,37 @@ const getOrderById = async (req, res) => {
     }
 };
 
+const updateOrderController = async (req, res) => {
+    try {
+        const orderId = req.params.id; // Get order ID from URL
+        const updateData = req.body; // Get fields to update from request body
+        console.log("sfddddddddddd",updateData);
+        // Call the service function to update order
+        const updatedOrder = await orderService.updateOrders(req, orderId, updateData);
+
+        if (!updatedOrder) {
+            return res.status(404).json({ success: false, message: "Order not found" });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "Order updated successfully",
+            order: updatedOrder,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+const returnOrderController = async (req, res) => {
+    try {
+        const response = await orderService.returnOrder(req);
+        res.status(response.status).json(response);
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({success: false, message: error.message});
+    }
+};
 
 module.exports = {
     createOrder,
@@ -83,5 +114,7 @@ module.exports = {
     getOrdersBasedOnDate,
     ordersBasedonStatus,
     getMyContractsController,
-    getOrderById
+    getOrderById,
+    updateOrderController,
+    returnOrderController
 };

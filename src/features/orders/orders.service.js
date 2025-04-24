@@ -9,11 +9,11 @@ const generateUID = () => {
     return crypto.randomBytes(2).toString("hex").toUpperCase().slice(0, 3);
 };
 
-const createOrder = async (req, patientName, age, teethNo, sex, color, type, description, prova, deadline, labId) => {
+const createOrder = async (req, patientName, age, teethNo, sex, color, type, description, prova, deadline, labId, scanFile) => {
     try {
         const doctorId = req.doctor.id;
+        console.log("asdkjl", req.doctor.id);
         console.log("doctorId", doctorId);
-
         // Validate required fields
         if (!patientName || !teethNo || !sex || !color || !type || prova === undefined || !deadline || !labId) {
             throw { status: 400, message: "All required fields must be provided" };
@@ -85,6 +85,7 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
             prova,
             taked: false,
             media: [],
+            scanFile: scanFile || false,
             date: new Date(),
         });
 
@@ -118,29 +119,22 @@ const updateOrders = async (req, orderId, updateData) => {
     try {
         console.log("Doctor ID:", req.doctor?.id);
         console.log("Updating Order ID:", orderId);
-        const doctorId = req.doctor.id;
-        const cacheKey = generateOrderKey(orderId);
+        const labId = req.lab.id;
         const order = await orders.findById(orderId);
         if (!order) {
             console.error("Order not found in DB:", orderId);
             throw new Error("Order not found");
         }
-        console.log("Order doctor ID:", order.doctorId);
-        if (order.doctorId.toString() !== doctorId) {
-            throw new Error("Unauthorized");
-        }
+        console.log("Order doctor ID:", order.labId);
+        // if (order.labId.toString() !== labId) {
+        //     throw new Error("Unauthorized");
+        // }
         const updatedOrder = await orders.findOneAndUpdate(
             { _id: orderId },
             { $set: updateData },
             { new: true, runValidators: true }
         );
         console.log("Updated order:", updatedOrder);
-        try {
-            await redisClient.del(cacheKey);
-            console.log(`Deleted cache for order: ${orderId}`);
-        } catch (redisError) {
-            console.error("Redis cache deletion error:", redisError.message);
-        }
 
         return updatedOrder;
     } catch (error) {
@@ -170,6 +164,8 @@ const getMyLabs = async (req) => {
         throw new Error("Error in getMyLabs");
     }
 };
+
+
 
 
 

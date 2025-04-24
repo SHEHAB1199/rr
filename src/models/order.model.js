@@ -83,6 +83,10 @@ const orderSchema = new mongoose.Schema(
       required: false,
       default: true,
     },
+      returned:{
+        type: String,
+          default: false
+      },
 
     media: {
         type: [],
@@ -100,7 +104,11 @@ const orderSchema = new mongoose.Schema(
       prova:{
         type: Boolean,
           required: true,
-      }
+      },
+      scanFile: {
+          type: Boolean,
+          default: false
+      },
   },
   { timestamps: true }
 );

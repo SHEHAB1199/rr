@@ -556,20 +556,20 @@ const updatePrice = async (req) => {
         order.rest = order.price - paied;
         const updatedOrder = await order.save();
 
-        // 5. Clear Redis cache
-        const cacheKeys = [
-            `lab:${labId}:orders`, // Cache for getAllOrders
-            generateOrderKey(orderId), // Cache for getOrderById
-            generateLabOrdersKey(labId), // Cache for getOrdersFilter
-        ];
-
-        await Promise.all(
-            cacheKeys.map((key) =>
-                redisClient.del(key).catch((err) => {
-                    console.error(`Error deleting cache key ${key}:`, err);
-                })
-            )
-        );
+        // // 5. Clear Redis cache
+        // const cacheKeys = [
+        //     `lab:${labId}:orders`, // Cache for getAllOrders
+        //     generateOrderKey(orderId), // Cache for getOrderById
+        //     generateLabOrdersKey(labId), // Cache for getOrdersFilter
+        // ];
+        //
+        // await Promise.all(
+        //     cacheKeys.map((key) =>
+        //         redisClient.del(key).catch((err) => {
+        //             console.error(`Error deleting cache key ${key}:`, err);
+        //         })
+        //     )
+        // );
 
         // 6. Return success response
         return {
