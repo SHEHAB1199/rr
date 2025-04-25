@@ -9,18 +9,20 @@ class DeliveryService {
 
             const orders = await ordersModel.find({
                 taked: false,
+                scanFile: false,
                 $or: [
                     { status: { $regex: '^DoctorReady' } },
                     { status: { $regex: '^LabReady' } }
                 ]
-            }) .populate({
-                path: "doctorId",
-                select: "UID username phoneNumber address floorNo buildNo"
             })
+                .populate({
+                    path: "doctorId",
+                    select: "UID username phoneNumber address floorNo buildNo"
+                })
                 .populate({
                     path: "labId",
                     select: "UID username phoneNumber address floorNo buildNo"
-                })
+                });
 
 
             return {
