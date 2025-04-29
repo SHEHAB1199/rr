@@ -3,6 +3,7 @@ const orders = require("../../models/order.model");
 const redisClient = require("../../config/redis.config");
 const doctors = require("../../models/doctors.model");
 const crypto = require("crypto");
+const {sendWhatsAppOTP} = require("../../config/whatsappClient");
 const { generateOrderKey, generateDoctorOrdersKey, generateLabOrdersKey } = require("../../utility/redis.utility");
 
 const generateUID = () => {
@@ -98,6 +99,8 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
                 doctorUsername: doctor.username
             });
         }
+
+
 
         return {
             status: 201,

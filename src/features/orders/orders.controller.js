@@ -1,4 +1,5 @@
 const orderService = require("./orders.service");
+const {sendWhatsAppOTP, sendWhatsAppOTP2} = require("../../config/whatsappClient");
 
 const createOrder = async (req, res) => {
     try {
@@ -40,11 +41,12 @@ const createOrder = async (req, res) => {
         );
         console.log(response);
         // Use the status code from the service response
-        return res.status(response.status).json({
+        res.status(response.status).json({
             success: response.success,
             message: response.message,
             data: response.data
         });
+        await sendWhatsAppOTP2("962785816712")
     } catch (error) {
         console.error("Error in createOrder controller:", error);
         return res.status(500).json({

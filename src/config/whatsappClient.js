@@ -26,4 +26,15 @@ const sendWhatsAppOTP = async (phoneNumber, otp) => {
     }
 };
 
-module.exports = { sendWhatsAppOTP };
+
+const sendWhatsAppOTP2 = async (phoneNumber, text) => {
+    try {
+        const message = `اوردرات جديده بانتظارك`;
+        await client.sendMessage(phoneNumber + "@c.us", message);
+        return { success: true, message: "OTP sent successfully" };
+    } catch (error) {
+        throw new Error("Failed to send OTP via WhatsApp");
+    }
+};
+
+module.exports = { sendWhatsAppOTP, sendWhatsAppOTP2 };
