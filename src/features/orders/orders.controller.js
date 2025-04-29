@@ -18,7 +18,7 @@ const createOrder = async (req, res) => {
         } = req.body;
 
         // Validate required fields at controller level too
-        if (!patientName || !teethNo || !sex || !color || !type || prova === undefined || !deadline || !labId) {
+        if (!patientName || !teethNo || !sex  || !type || prova === undefined || !deadline || !labId) {
             return res.status(400).json({
                 success: false,
                 message: "All required fields must be provided"

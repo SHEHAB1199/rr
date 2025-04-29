@@ -16,7 +16,7 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
         console.log("asdkjl", req.doctor.id);
         console.log("doctorId", doctorId);
         // Validate required fields
-        if (!patientName || !teethNo || !sex || !color || !type || prova === undefined || !deadline || !labId) {
+        if (!patientName || !teethNo || !sex  || !type || prova === undefined || !deadline || !labId) {
             throw { status: 400, message: "All required fields must be provided" };
         }
 
