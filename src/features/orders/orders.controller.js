@@ -1,7 +1,35 @@
 const orderService = require("./orders.service");
 const {sendWhatsAppOTP, sendWhatsAppOTP2} = require("../../config/whatsappClient");
+const savedOrders = require("../../models/svaedOrders.model");
+// Improved addToSave function
+async function addToSave(orderId, labId, doctorId) {
+    try {
+        const existDocument = await savedOrders.findOne({ doctorId, labId });
+
+        if (existDocument) {
+            if (existDocument.orders.includes(orderId)) {
+                return {
+                    status: 400,
+                    message: "Order already saved",
+                };
+            }
+            existDocument.orders.push(orderId);
+            await existDocument.save();
+            return { status: 200, message: "Order saved successfully" };
+        }
+
+        const newDocument = new savedOrders({ doctorId, labId, orders: [orderId] });
+        await newDocument.save();
+        return { status: 200, message: "Order created and saved successfully" };
+    } catch (err) {
+        console.error("Error in addToSave:", err);
+        return { status: 500, message: "Failed to save order" };
+    }
+}
+
 
 const createOrder = async (req, res) => {
+    const doctorId = req.doctor.id;
     try {
         const {
             patientName,
@@ -14,11 +42,11 @@ const createOrder = async (req, res) => {
             prova,
             deadline,
             labId,
-            scanFile
+            scanFile,
+            save
         } = req.body;
 
-        // Validate required fields at controller level too
-        if (!patientName || !teethNo || !sex  || !type || prova === undefined || !deadline || !labId) {
+        if (!patientName || !teethNo || !sex || !type || prova === undefined || !deadline || !labId) {
             return res.status(400).json({
                 success: false,
                 message: "All required fields must be provided"
@@ -37,16 +65,22 @@ const createOrder = async (req, res) => {
             prova,
             deadline,
             labId,
+            save,
             scanFile || false,
         );
-        console.log(response);
-        // Use the status code from the service response
+
         res.status(response.status).json({
             success: response.success,
             message: response.message,
             data: response.data
         });
-        await sendWhatsAppOTP2("962785816712")
+
+        if (save && response.success && response.data?._id) {
+            await addToSave(response.data._id, labId, doctorId);
+        }
+
+        await sendWhatsAppOTP2("962785816712");
+
     } catch (error) {
         console.error("Error in createOrder controller:", error);
         return res.status(500).json({

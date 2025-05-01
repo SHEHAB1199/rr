@@ -5,12 +5,14 @@ const doctors = require("../../models/doctors.model");
 const crypto = require("crypto");
 const {sendWhatsAppOTP} = require("../../config/whatsappClient");
 const { generateOrderKey, generateDoctorOrdersKey, generateLabOrdersKey } = require("../../utility/redis.utility");
-
+const savedOrders = require("../../models/svaedOrders.model");
+const deliverOrders = require("../../models/deliveryOrders");
 const generateUID = () => {
     return crypto.randomBytes(2).toString("hex").toUpperCase().slice(0, 3);
 };
 
-const createOrder = async (req, patientName, age, teethNo, sex, color, type, description, prova, deadline, labId, scanFile) => {
+
+const createOrder = async (req, save, patientName, age, teethNo, sex, color, type, description, prova, deadline, labId, scanFile) => {
     try {
         const doctorId = req.doctor.id;
         console.log("asdkjl", req.doctor.id);
@@ -86,6 +88,7 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
             prova,
             taked: false,
             media: [],
+            save: save || false,
             scanFile: scanFile || false,
             date: new Date(),
         });
@@ -99,8 +102,6 @@ const createOrder = async (req, patientName, age, teethNo, sex, color, type, des
                 doctorUsername: doctor.username
             });
         }
-
-
 
         return {
             status: 201,

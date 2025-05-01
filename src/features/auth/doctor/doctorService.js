@@ -44,7 +44,7 @@ const register = async (username, phoneNumber, email, buildNo, floorNo, address,
 
 const login = async (phoneNumber, email, password) => {
     let doctor = null;
-    console.log(JWT_SECRET);
+    // console.log(JWT_SECRET);
     if (email) {
         doctor = await doctorsModel.findOne({ email });
     } else {
