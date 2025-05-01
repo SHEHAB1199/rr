@@ -15,10 +15,10 @@ const generateUID = () => {
 const createOrder = async (req, save, patientName, age, teethNo, sex, color, type, description, prova, deadline, labId, scanFile) => {
     try {
         const doctorId = req.doctor.id;
-        console.log("asdkjl", req.doctor.id);
         console.log("doctorId", doctorId);
+
         // Validate required fields
-        if (!patientName || !teethNo || !sex  || !type || prova === undefined || !deadline || !labId) {
+        if (!patientName || !teethNo || !sex || !type || prova === undefined || !deadline || !labId) {
             throw { status: 400, message: "All required fields must be provided" };
         }
 
@@ -51,25 +51,17 @@ const createOrder = async (req, save, patientName, age, teethNo, sex, color, typ
         }
         const calculatedPrice = doctorContract.teethTypes[type] * teethNo;
 
-        // Get doctor's username - FIXED THIS PART
+        // Get doctor's username
         const doctor = await doctors.findById(doctorId).select("username").lean();
         if (!doctor) {
             throw { status: 404, message: "Doctor not found" };
         }
 
-        // Determine order status - FIXED THIS LOGIC
-        let status;
-        console.log("333333333", prova);
-        console.log(typeof prova);
-        if (prova === "true") {
-            status = "DoctorReady(p)";
-        } else {
-            status = "DoctorReady(f)";
-        }
-        console.log("333333333", status);
+        // Determine order status
+        let status = (prova === "true") ? "DoctorReady(p)" : "DoctorReady(f)";
 
         // Create the order
-        const newOrder = new orders({
+        const newOrder = await orders.create({
             UID: generateUID(),
             patientName,
             doctorId,
@@ -92,10 +84,9 @@ const createOrder = async (req, save, patientName, age, teethNo, sex, color, typ
             scanFile: scanFile || false,
             date: new Date(),
         });
+        console.log(newOrder);
 
-        await newOrder.save();
-
-        // Socket emission - FIXED THE DATA BEING SENT
+        // Emit socket event
         if (global.io) {
             global.io.emit(`get-orders/${labId}`, {
                 orders: newOrder,
@@ -107,8 +98,7 @@ const createOrder = async (req, save, patientName, age, teethNo, sex, color, typ
             status: 201,
             success: true,
             message: "Order created successfully",
-            order: newOrder,
-            fromCache: false,
+            data: newOrder,
         };
     } catch (error) {
         console.error("Error in createOrder:", error);
@@ -119,6 +109,7 @@ const createOrder = async (req, save, patientName, age, teethNo, sex, color, typ
         };
     }
 };
+
 const updateOrders = async (req, orderId, updateData) => {
     try {
         console.log("Doctor ID:", req.doctor?.id);

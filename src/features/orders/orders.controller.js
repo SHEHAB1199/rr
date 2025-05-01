@@ -3,26 +3,33 @@ const {sendWhatsAppOTP, sendWhatsAppOTP2} = require("../../config/whatsappClient
 const savedOrders = require("../../models/svaedOrders.model");
 const deliverOrders = require("../../models/deliveryOrders");
 const mongoose = require('mongoose');
-async function addsaveOrder(orderId, doctorId, labId){
+async function addsaveOrder(orderId, doctorId, labId) {
+    try {
+        console.log("asddddd")
+        const existDocument = await savedOrders.findOne({ doctorId, labId, status: 'pending' });
 
-    const existDocument = await savedOrders.findOne({ doctorId, labId });
-
-    if (existDocument) {
-        if (existDocument.orders.includes(orderId)) {
-            return {
-                status: 400,
-                message: "Order already saved",
+        if (existDocument) {
+            // If order already exists in the document
+            if (existDocument.orders.includes(orderId)) {
+                return { status: 400, message: "Order already saved" };
             }
-        }
-        existDocument.orders.push(orderId);
-        await existDocument.save();
-        return { status: 200, message: "Order saved successfully" };
-    }
 
-    const newDocument = new savedOrders({ doctorId, labId, orders: [orderId] });
-    await newDocument.save();
-    return { status: 200, message: "Order created and saved successfully" };
-} {}
+            existDocument.orders.push(orderId);
+            await existDocument.save();
+            return { status: 200, message: "Order saved successfully" };
+        }
+
+        // If no document exists for the doctor and lab, create a new one
+        const newDocument = new savedOrders({ doctorId, labId, orders: [orderId], status: "pending" });
+        await newDocument.save();
+        return { status: 200, message: "Order created and saved successfully" };
+
+    } catch (error) {
+        console.error("Error in addsaveOrder:", error);
+        return { status: 500, message: "Failed to save order" };
+    }
+}
+
 const createOrder = async (req, res) => {
     try {
         const {
@@ -40,16 +47,28 @@ const createOrder = async (req, res) => {
             save
         } = req.body;
 
-        // Validate required fields at controller level too
-        if (!patientName || !teethNo || !sex  || !type || prova === undefined || !deadline || !labId) {
+        // Validate required fields and identify which ones are missing
+        const missingFields = [];
+
+        if (!patientName) missingFields.push("patientName");
+        if (!teethNo) missingFields.push("teethNo");
+        if (!sex) missingFields.push("sex");
+        if (!type) missingFields.push("type");
+        if (prova === undefined) missingFields.push("prova");
+        if (!deadline) missingFields.push("deadline");
+        if (!labId) missingFields.push("labId");
+
+        if (missingFields.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: "All required fields must be provided"
+                message: `Missing required field(s): ${missingFields.join(", ")}`
             });
         }
 
+        // Call the service to create the order
         const response = await orderService.createOrder(
             req,
+            save || false,
             patientName,
             age,
             teethNo,
@@ -60,30 +79,32 @@ const createOrder = async (req, res) => {
             prova,
             deadline,
             labId,
-            scanFile || false,
-            save || false
+            scanFile || false
         );
-
+        const state = save;
         // If order creation was successful and save flag is true, save the order
-        if (response.success && save) {
-            const doctorId = req.user.id; // Assuming doctor ID is in the user object
-            const orderId = response.data._id; // Assuming the created order ID is in the response
-            const saveResponse = await addsaveOrder(orderId, doctorId, mongoose.Types.ObjectId(labId));
+        if (response.success) {
+            console.log("save", save)
+            console.log(typeof(state))
 
-            if (saveResponse.status !== 200) {
-                // You might want to handle this case differently
-                console.warn("Order was created but could not be saved:", saveResponse.message);
+            if (state === 'true') {
+                const doctorId = req.doctor.id;  // Assuming doctor ID is in the user object
+                const orderId = response.data._id; // Assuming the created order ID is in the response
+                const saveResponse = await addsaveOrder(orderId, doctorId, labId);
+
+                if (saveResponse.status !== 200) {
+                    // Handle save error
+                    console.warn("Order was created but could not be saved:", saveResponse.message);
+                }
             }
         }
 
-        // Use the status code from the service response
         res.status(response.status).json({
             success: response.success,
             message: response.message,
-            data: response.data
+            data: response.data,
         });
 
-        await sendWhatsAppOTP2("962785816712");
     } catch (error) {
         console.error("Error in createOrder controller:", error);
         return res.status(500).json({
@@ -92,6 +113,7 @@ const createOrder = async (req, res) => {
         });
     }
 };
+
  const getMyLabs = async (req, res) => {
      try{
          const labs = await orderService.getMyLabs(req);

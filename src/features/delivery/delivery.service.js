@@ -1,5 +1,7 @@
 const ordersModel = require('../../models/order.model');
 const mongoose = require('mongoose');
+const savedOrders = require('../../models/svaedOrders.model');
+const deliveryOrders = require('../../models/deliveryOrders');
 class DeliveryService {
     static async getAvailableOrders(deliveryRole) {
         try {
@@ -195,6 +197,100 @@ class DeliveryService {
             };
         }
     }
+    static async getSavedOrders(){
+        try {
+            const orders = await deliveryOrders.find({ status: "pending" });
+            return {
+                status: 200,
+                message: "Orders retrieved successfully",
+                data: orders,
+                success: true
+            }
+        }catch(error){
+            console.error("[DeliveryService] myOrders error:", error);
+            return {
+                success: false,
+                message: "Error retrieving orders",
+                status: 500,
+                data: []
+            };
+        }
+    }
+    static async completeSavedorders(orderId) {
+        try {
+            // Step 1: Find the saved order by its ID
+            const savedOrder = await savedOrders.findOne({ _id: orderId });
+
+            if (!savedOrder) {
+                return {
+                    success: false,
+                    message: "Saved order not found",
+                    status: 404,
+                    data: []
+                };
+            }
+
+            // Step 2: Get order IDs from savedOrder
+            const ordersIds = savedOrder.orders;
+
+            // Step 3: Define status transitions
+            const statusTransitions = {
+                "DoctorReady": "lab received",
+                "lab ready": "return to doctor",
+                "going to doctor": "end"
+            };
+
+            // Step 4: Update each order status
+            const updatedOrders = await Promise.all(
+                ordersIds.map(async (orderId) => {
+                    const order = await ordersModel.findOne({ _id: orderId });
+                    if (!order) return null;
+
+                    const isFinal = order.status.includes("(f)");
+                    const statusType = isFinal ? "(f)" : "(p)";
+                    const baseStatus = order.status.replace(/\([fp]\)$/, '').trim();
+
+                    const newBaseStatus = statusTransitions[baseStatus];
+                    if (newBaseStatus) {
+                        const newStatus = `${newBaseStatus}${statusType}`;
+
+                        await ordersModel.updateOne(
+                            { _id: orderId },
+                            { $set: { status: newStatus } }
+                        );
+
+                        return { orderId, status: newStatus };
+                    }
+                    return null;
+                })
+            );
+
+            const validUpdates = updatedOrders.filter(order => order !== null);
+
+            // Step 5: Update saved order status to "Completed"
+            await savedOrders.updateOne(
+                { _id: orderId },
+                { $set: { status: "Completed" } }
+            );
+
+            return {
+                success: true,
+                message: `${validUpdates.length} orders updated and saved order marked as completed`,
+                status: 200,
+                data: validUpdates
+            };
+        } catch (error) {
+            console.error(error);
+            return {
+                success: false,
+                message: "Error completing orders",
+                status: 500,
+                data: []
+            };
+        }
+    }
+
+
 }
 
 module.exports = DeliveryService;

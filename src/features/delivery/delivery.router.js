@@ -13,4 +13,6 @@ router.patch('/orders/:id/take', authenticateDel, DeliveryController.takeOrder);
 router.post('/orders/end-task/:orderId', authenticateDel, DeliveryController.endTask);
 
 router.get('/myOrders', authenticateDel, DeliveryController.myOrders);
+router.get('/saved', DeliveryController.getSavedOrdersController);
+router.put('/complete/:orderId', authenticateDel, DeliveryController.completeSavedOrders);
 module.exports = router;

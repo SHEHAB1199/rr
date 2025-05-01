@@ -18,6 +18,10 @@ const savedOrdersSchema = new mongoose.Schema(
                 ref: "orders",
             },
         ],
+        status: {
+            type: String,
+            default: "pending",
+        }
     },
     { timestamps: true }
 );

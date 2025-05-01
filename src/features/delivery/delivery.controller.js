@@ -61,6 +61,51 @@ class DeliveryController {
             });
         }
     }
+    static async getSavedOrdersController(req, res){
+        try{
+            const deliveryId = req.del.id;
+            const response = await DeliveryService.getSavedOrders(deliveryId);
+            return res.status(response.status).json(
+                {
+                    success: response.success,
+                    message: response.message,
+                    data: response.data
+                }
+            )
+        }catch(error){
+            console.log(error);
+            return res.status(500).json({
+              success: false,
+              message: error.message,
+              data: []
+            })
+        }
+    }
+    static async completeSavedOrders(req, res) {
+        const { orderId } = req.params; // Get orderId from the request parameters
+
+        try {
+            const result = await DeliveryService.completeSavedorders(orderId); // Call the service method
+
+            if (!result.success) {
+                return res.status(result.status).json({
+                    message: result.message,
+                    data: result.data,
+                });
+            }
+
+            return res.status(result.status).json({
+                message: result.message,
+                data: result.data,
+            });
+        } catch (error) {
+            console.error(error);
+            return res.status(500).json({
+                message: 'Internal server error',
+                data: [],
+            });
+        }
+    }
 }
 
 module.exports = DeliveryController;
