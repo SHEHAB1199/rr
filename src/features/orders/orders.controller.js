@@ -15,15 +15,15 @@ async function addToSave(orderId, labId, doctorId) {
             }
             existDocument.orders.push(orderId);
             await existDocument.save();
-            return { status: 200, message: "Order saved successfully" };
+            return { message: "Order saved successfully" };
         }
 
         const newDocument = new savedOrders({ doctorId, labId, orders: [orderId] });
         await newDocument.save();
-        return { status: 200, message: "Order created and saved successfully" };
+        return { message: "Order created and saved successfully" };
     } catch (err) {
         console.error("Error in addToSave:", err);
-        return { status: 500, message: "Failed to save order" };
+        return { message: "Failed to save order" };
     }
 }
 
@@ -43,7 +43,7 @@ const createOrder = async (req, res) => {
             deadline,
             labId,
             scanFile,
-            save
+            save,
         } = req.body;
 
         if (!patientName || !teethNo || !sex || !type || prova === undefined || !deadline || !labId) {
@@ -65,8 +65,8 @@ const createOrder = async (req, res) => {
             prova,
             deadline,
             labId,
-            save,
             scanFile || false,
+            save || false,
         );
 
         res.status(response.status).json({
