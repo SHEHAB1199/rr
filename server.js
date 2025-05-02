@@ -53,6 +53,7 @@ const doctorsDashboard = require("./src/features/doctorDashboard/doctorRouter");
 const ordersRoute = require("./src/features/orders/orders.router");
 const labsOrders = require("./src/features/laboratory/lab.router");
 const deliveryWork = require("./src/features/delivery/delivery.router");
+const svaedOrders = require("./src/features/savedOrders/savedOrders.router");
 
 app.use('/doctors', doctorsRoutes);
 app.use('/labs', labsRoutes);
@@ -64,7 +65,7 @@ app.use('/docdash', doctorsDashboard);
 app.use('/orders', ordersRoute);
 app.use('/labdash', labsOrders);
 app.use('/del', deliveryWork);
-
+app.use('/saved', svaedOrders);
 // Sample Route
 app.get('/', (req, res) => {
     res.send('Server is running!');
