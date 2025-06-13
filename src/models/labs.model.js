@@ -54,20 +54,20 @@ const labsSchema = new mongoose.Schema(
 
     contracts: {
       type: [
-        {
-          doctorId: {
-            type: mongoose.Schema.Types.ObjectId,
-            required: true,
-            ref: "doctors", 
+          {
+              doctorId: {
+                  type: mongoose.Schema.Types.ObjectId,
+                  required: true,
+                  ref: "doctors",
+              },
+              teethTypes: {
+                  type: Map,
+                  of: Number,
+                  required: true,
+              },
           },
-          teethTypes: {
-            type: Map, 
-            of: Number, 
-            required: true,
-          },
-        },
       ],
-      default: [], // Default to an empty array
+        default: [], // Default to an empty array
     },
       doctors: {
         type: [mongoose.Schema.Types.ObjectId],

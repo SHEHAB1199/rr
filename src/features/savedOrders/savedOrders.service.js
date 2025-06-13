@@ -50,7 +50,7 @@ class SavedOrderService {
 
     static async getSavedOrders(doctorId) {
         try {
-            const savedOrder = await savedOrders.find({ doctorId }).populate("orders"); // optional populate
+            const savedOrder = await savedOrders.find({ doctorId }).populate("orders");
             return {
                 status: 200,
                 data: savedOrder,

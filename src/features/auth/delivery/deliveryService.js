@@ -16,35 +16,6 @@ const hashPassword = async (password) => {
     return bcrypt.hash(password, salt);
 };
 
-// Register a new delivery person
-const register = async (username, phoneNumber, email, buildNo, floorNo, address, password) => {
-    const existDelivery = await deliveryModel.findOne({
-        $or: [{ email }, { phoneNumber }],
-    });
-
-    if (existDelivery) {
-        const error = new Error("Delivery person already exists");
-        error.statusCode = 400;
-        throw error;
-    }
-
-    const UID = generateUID();
-    const hashedPassword = await hashPassword(password);
-
-    const newDelivery = new deliveryModel({
-        username,
-        phoneNumber,
-        email,
-        buildNo,
-        floorNo,
-        address,
-        password: hashedPassword,
-        UID,
-    });
-
-    await newDelivery.save();
-    return { message: "Delivery person registered successfully", newDelivery };
-};
 
 // Login a delivery person
 const login = async (phoneNumber, email, password) => {
@@ -183,7 +154,6 @@ const getDeliveryData = async (phoneNumber) => {
 };
 
 module.exports = {
-    register,
     login,
     changePassword,
     forgetPassword,
